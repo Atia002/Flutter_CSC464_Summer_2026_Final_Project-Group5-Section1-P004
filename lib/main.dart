@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
-// ১. জেনারেট হওয়া firebase_options.dart ফাইলটি এখানে ইম্পোর্ট করা হলো
 import 'firebase_options.dart'; 
 
 import 'providers/expense_provider.dart';
@@ -12,7 +11,7 @@ import 'screens/home_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // ২. Firebase ইনিশিয়ালাইজ করার সময় options পাস করা হলো
+  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
