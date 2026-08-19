@@ -33,6 +33,71 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return '\$${amount.toStringAsFixed(2)}';
   }
 
+  Color getCategoryColor(String category) {
+    switch (category) {
+      case 'Food':
+        return Colors.purple;
+      case 'Transport':
+        return Colors.blue;
+      case 'Shopping':
+        return Colors.pink;
+      case 'Bills':
+        return Colors.orange;
+      case 'Entertainment':
+        return Colors.deepPurple;
+      case 'Health':
+        return Colors.green;
+      case 'Other':
+        return Colors.teal;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Widget buildSummaryCard({
+    required IconData icon,
+    required String title,
+    required String value,
+    String? subtitle,
+  }) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(icon, size: 36),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(height: 6),
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        subtitle,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ExpenseProvider>(
@@ -43,6 +108,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
         Map<String, double> categoryTotals = expenseProvider
             .categoryTotalsForMonth(selectedMonth);
+
+        List<MapEntry<String, double>> sortedCategories = categoryTotals.entries
+            .toList();
+
+        sortedCategories.sort((a, b) => b.value.compareTo(a.value));
 
         String? highestCategory = expenseProvider.highestCategoryForMonth(
           selectedMonth,
@@ -76,95 +146,48 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
                 const SizedBox(height: 20),
 
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Total Expense',
-                          style: TextStyle(fontSize: 16),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Text(
-                          formatMoney(totalExpense),
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                buildSummaryCard(
+                  icon: Icons.payments,
+                  title: 'All-Time Expense',
+                  value: formatMoney(totalExpense),
                 ),
 
                 const SizedBox(height: 10),
 
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${DateFormat('MMMM yyyy').format(selectedMonth)} Expense',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Text(
-                          formatMoney(monthlyExpense),
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                buildSummaryCard(
+                  icon: Icons.calendar_month,
+                  title:
+                      '${DateFormat('MMMM yyyy').format(selectedMonth)} Expense',
+                  value: formatMoney(monthlyExpense),
                 ),
 
                 const SizedBox(height: 10),
 
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.receipt_long),
-                    title: const Text('Number of Recorded Expenses'),
-                    trailing: Text(
-                      expenseCount.toString(),
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                buildSummaryCard(
+                  icon: Icons.receipt_long,
+                  title: 'Recorded Expenses',
+                  value: expenseCount.toString(),
                 ),
 
                 const SizedBox(height: 10),
 
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.trending_up),
-                    title: const Text('Highest Spending Category'),
-                    subtitle: Text(highestCategory ?? 'No expenses recorded'),
-                    trailing: highestCategory == null
-                        ? null
-                        : Text(
-                            formatMoney(categoryTotals[highestCategory] ?? 0.0),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                  ),
+                buildSummaryCard(
+                  icon: Icons.trending_up,
+                  title: 'Highest Spending Category',
+                  value: highestCategory ?? 'No expenses recorded',
+                  subtitle: highestCategory == null
+                      ? null
+                      : formatMoney(categoryTotals[highestCategory] ?? 0.0),
                 ),
 
                 const SizedBox(height: 20),
 
-                const Text(
-                  'Category-wise Spending',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Text(
+                  'Category-wise Spending of ${DateFormat('MMMM yyyy').format(selectedMonth)} ',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
 
                 const SizedBox(height: 10),
@@ -177,17 +200,90 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     ),
                   ),
 
-                ...categoryTotals.entries.map((entry) {
-                  return Card(
-                    child: ListTile(
-                      title: Text(entry.key),
-                      trailing: Text(
-                        formatMoney(entry.value),
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                if (categoryTotals.isNotEmpty)
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        children: sortedCategories.map((entry) {
+                          double percentage = monthlyExpense == 0
+                              ? 0.0
+                              : entry.value / monthlyExpense;
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 14,
+                                      height: 14,
+                                      decoration: BoxDecoration(
+                                        color: getCategoryColor(entry.key),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+
+                                    const SizedBox(width: 10),
+
+                                    Expanded(
+                                      child: Text(
+                                        entry.key,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+
+                                    Text(
+                                      formatMoney(entry.value),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+
+                                    const SizedBox(width: 12),
+
+                                    SizedBox(
+                                      width: 55,
+                                      child: Text(
+                                        '${(percentage * 100).toStringAsFixed(1)}%',
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: getCategoryColor(entry.key),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: LinearProgressIndicator(
+                                    value: percentage,
+                                    minHeight: 9,
+                                    color: getCategoryColor(entry.key),
+                                    backgroundColor: Colors.grey.shade200,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
-                  );
-                }),
+                  ),
               ],
             ),
           ),
