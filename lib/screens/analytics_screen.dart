@@ -50,138 +50,146 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
         int expenseCount = expenseProvider.countForMonth(selectedMonth);
 
-        return SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              const Text(
-                'Expense Analytics',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 16),
-
-              OutlinedButton.icon(
-                onPressed: selectMonth,
-                icon: const Icon(Icons.calendar_month),
-                label: Text(DateFormat('MMMM yyyy').format(selectedMonth)),
-              ),
-
-              const SizedBox(height: 20),
-
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Total Expense',
-                        style: TextStyle(fontSize: 16),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        formatMoney(totalExpense),
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+        return Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/expense_background.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                const Text(
+                  'Expense Analytics',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 16),
 
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${DateFormat('MMMM yyyy').format(selectedMonth)} Expense',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Text(
-                        formatMoney(monthlyExpense),
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                OutlinedButton.icon(
+                  onPressed: selectMonth,
+                  icon: const Icon(Icons.calendar_month),
+                  label: Text(DateFormat('MMMM yyyy').format(selectedMonth)),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 20),
 
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.receipt_long),
-                  title: const Text('Number of Recorded Expenses'),
-                  trailing: Text(
-                    expenseCount.toString(),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Card(
-                child: ListTile(
-                  leading: const Icon(Icons.trending_up),
-                  title: const Text('Highest Spending Category'),
-                  subtitle: Text(highestCategory ?? 'No expenses recorded'),
-                  trailing: highestCategory == null
-                      ? null
-                      : Text(
-                          formatMoney(categoryTotals[highestCategory] ?? 0.0),
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              const Text(
-                'Category-wise Spending',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 10),
-
-              if (categoryTotals.isEmpty)
-                const Card(
+                Card(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('No expenses recorded for this month.'),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Total Expense',
+                          style: TextStyle(fontSize: 16),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          formatMoney(totalExpense),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
-              ...categoryTotals.entries.map((entry) {
-                return Card(
-                  child: ListTile(
-                    title: Text(entry.key),
-                    trailing: Text(
-                      formatMoney(entry.value),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                const SizedBox(height: 10),
+
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${DateFormat('MMMM yyyy').format(selectedMonth)} Expense',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          formatMoney(monthlyExpense),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              }),
-            ],
+                ),
+
+                const SizedBox(height: 10),
+
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.receipt_long),
+                    title: const Text('Number of Recorded Expenses'),
+                    trailing: Text(
+                      expenseCount.toString(),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.trending_up),
+                    title: const Text('Highest Spending Category'),
+                    subtitle: Text(highestCategory ?? 'No expenses recorded'),
+                    trailing: highestCategory == null
+                        ? null
+                        : Text(
+                            formatMoney(categoryTotals[highestCategory] ?? 0.0),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                const Text(
+                  'Category-wise Spending',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 10),
+
+                if (categoryTotals.isEmpty)
+                  const Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('No expenses recorded for this month.'),
+                    ),
+                  ),
+
+                ...categoryTotals.entries.map((entry) {
+                  return Card(
+                    child: ListTile(
+                      title: Text(entry.key),
+                      trailing: Text(
+                        formatMoney(entry.value),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
           ),
         );
       },
