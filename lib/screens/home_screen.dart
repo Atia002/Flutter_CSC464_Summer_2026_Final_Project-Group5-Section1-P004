@@ -87,10 +87,14 @@ class _ExpenseListTab extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: TextField(
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Search expenses...',
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.search),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     isDense: true,
                   ),
                   onChanged: provider.setSearchQuery,
@@ -123,7 +127,29 @@ class _ExpenseListTab extends StatelessWidget {
                 ),
               Expanded(
                 child: provider.visibleExpenses.isEmpty
-                    ? const Center(child: Text('No expenses found.'))
+                    ? const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.receipt_long_outlined,
+                              size: 52,
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'No expenses found.',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Add an expense or change your filters.',
+                            ),
+                          ],
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: provider.visibleExpenses.length,
                         itemBuilder: (context, index) {
