@@ -17,6 +17,28 @@ class _BudgetScreenState extends State<BudgetScreen> {
     return '\$${amount.toStringAsFixed(2)}';
   }
 
+  Color getBudgetStatusColor(double usage) {
+    if (usage > 100) {
+      return Colors.red;
+    } else if (usage >= 80) {
+      return Colors.orange;
+    } else {
+      return Colors.green;
+    }
+  }
+
+  String getBudgetStatusText(double usage) {
+    if (usage > 100) {
+      return 'You are over your monthly budget';
+    } else if (usage >= 80) {
+      return 'You are close to your monthly budget';
+    } else if (usage >= 50) {
+      return 'More than half of your budget is used';
+    } else {
+      return 'You are within your monthly budget';
+    }
+  }
+
   Future<void> selectMonth(BudgetProvider budgetProvider) async {
     DateTime? pickedDate = await showDatePicker(
       context: context,
@@ -157,6 +179,12 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
         double overBudgetAmount = budgetProvider.overBudgetAmount(spent);
 
+        Color statusColor = getBudgetStatusColor(usage);
+
+        String selectedMonthText = DateFormat(
+          'MMMM yyyy',
+        ).format(budgetProvider.selectedMonth);
+
         return Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
@@ -173,6 +201,13 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
 
+                const SizedBox(height: 6),
+
+                Text(
+                  'Manage your spending limit for each month.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                ),
+
                 const SizedBox(height: 16),
 
                 OutlinedButton.icon(
@@ -180,11 +215,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                     selectMonth(budgetProvider);
                   },
                   icon: const Icon(Icons.calendar_month),
-                  label: Text(
-                    DateFormat(
-                      'MMMM yyyy',
-                    ).format(budgetProvider.selectedMonth),
-                  ),
+                  label: Text(selectedMonthText),
                 ),
 
                 const SizedBox(height: 20),
@@ -193,32 +224,47 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   const Center(child: CircularProgressIndicator())
                 else if (budgetProvider.currentBudget == null)
                   Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         children: [
                           const Icon(
                             Icons.account_balance_wallet_outlined,
-                            size: 50,
+                            size: 52,
                           ),
 
                           const SizedBox(height: 12),
 
                           Text(
-                            'No budget set for ${DateFormat('MMMM yyyy').format(budgetProvider.selectedMonth)}',
+                            'No budget set for $selectedMonthText',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          const Text(
+                            'Set a monthly budget to track your spending.',
                             textAlign: TextAlign.center,
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 18),
 
-                          ElevatedButton(
+                          ElevatedButton.icon(
                             onPressed: () {
                               showBudgetDialog(
                                 isEditing: false,
                                 budgetProvider: budgetProvider,
                               );
                             },
-                            child: const Text('Set Budget'),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Set Budget'),
                           ),
                         ],
                       ),
@@ -228,10 +274,37 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   Column(
                     children: [
                       Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.account_balance_wallet,
+                                    size: 30,
+                                  ),
+
+                                  const SizedBox(width: 10),
+
+                                  Expanded(
+                                    child: Text(
+                                      '$selectedMonthText Budget',
+                                      style: const TextStyle(
+                                        fontSize: 19,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 18),
+
                               buildRow(
                                 'Budget',
                                 formatMoney(
@@ -249,36 +322,71 @@ class _BudgetScreenState extends State<BudgetScreen> {
                                 buildRow(
                                   'Over Budget',
                                   formatMoney(overBudgetAmount),
+                                  valueColor: Colors.red,
                                 )
                               else
                                 buildRow('Remaining', formatMoney(remaining)),
 
                               const SizedBox(height: 20),
 
-                              LinearProgressIndicator(
-                                value: (usage / 100).clamp(0.0, 1.0),
-                                minHeight: 10,
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Budget Usage',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${usage.toStringAsFixed(1)}%',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: statusColor,
+                                    ),
+                                  ),
+                                ],
                               ),
 
                               const SizedBox(height: 10),
 
-                              Text(
-                                '${usage.toStringAsFixed(1)}% used',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: overBudget ? Colors.red : null,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: LinearProgressIndicator(
+                                  value: (usage / 100).clamp(0.0, 1.0),
+                                  minHeight: 10,
+                                  color: statusColor,
+                                  backgroundColor: Colors.grey.shade200,
                                 ),
                               ),
 
-                              if (overBudget)
-                                const Padding(
-                                  padding: EdgeInsets.only(top: 8),
-                                  child: Text(
-                                    'You are over your monthly budget.',
-                                    style: TextStyle(color: Colors.red),
+                              const SizedBox(height: 16),
+
+                              Row(
+                                children: [
+                                  Icon(
+                                    overBudget
+                                        ? Icons.warning_amber_rounded
+                                        : Icons.check_circle_outline,
+                                    color: statusColor,
                                   ),
-                                ),
+
+                                  const SizedBox(width: 8),
+
+                                  Expanded(
+                                    child: Text(
+                                      getBudgetStatusText(usage),
+                                      style: TextStyle(
+                                        color: statusColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -308,7 +416,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                               onPressed: () {
                                 confirmDelete(budgetProvider);
                               },
-                              icon: const Icon(Icons.delete),
+                              icon: const Icon(Icons.delete_outline),
                               label: const Text('Reset Budget'),
                             ),
                           ),
@@ -324,7 +432,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
     );
   }
 
-  Widget buildRow(String title, String value) {
+  Widget buildRow(String title, String value, {Color? valueColor}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -333,7 +441,11 @@ class _BudgetScreenState extends State<BudgetScreen> {
           Text(title, style: const TextStyle(fontSize: 17)),
           Text(
             value,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: valueColor,
+            ),
           ),
         ],
       ),
