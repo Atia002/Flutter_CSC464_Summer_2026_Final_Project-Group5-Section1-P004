@@ -70,7 +70,14 @@ class _ExpenseListTab extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<ExpenseProvider>(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/expense_background.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Consumer<ExpenseProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -141,6 +148,7 @@ class _ExpenseListTab extends StatelessWidget {
             ],
           );
         },
+      ),
       ),
     );
   }
