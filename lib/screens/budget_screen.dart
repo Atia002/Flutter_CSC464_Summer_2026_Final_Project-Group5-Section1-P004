@@ -165,270 +165,266 @@ class _BudgetScreenState extends State<BudgetScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<BudgetProvider, ExpenseProvider>(
-      builder: (context, budgetProvider, expenseProvider, child) {
-        double spent = expenseProvider.totalForMonth(
-          budgetProvider.selectedMonth,
-        );
+    final budgetProvider = context.watch<BudgetProvider>();
+    final expenseProvider = context.watch<ExpenseProvider>();
 
-        double remaining = budgetProvider.remainingBudget(spent);
+    double spent = expenseProvider.totalForMonth(budgetProvider.selectedMonth);
 
-        double usage = budgetProvider.usagePercentage(spent);
+    double remaining = budgetProvider.remainingBudget(spent);
 
-        bool overBudget = budgetProvider.isOverBudget(spent);
+    double usage = budgetProvider.usagePercentage(spent);
 
-        double overBudgetAmount = budgetProvider.overBudgetAmount(spent);
+    bool overBudget = budgetProvider.isOverBudget(spent);
 
-        Color statusColor = getBudgetStatusColor(usage);
+    double overBudgetAmount = budgetProvider.overBudgetAmount(spent);
 
-        String selectedMonthText = DateFormat(
-          'MMMM yyyy',
-        ).format(budgetProvider.selectedMonth);
+    Color statusColor = getBudgetStatusColor(usage);
 
-        return Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/expense_background.png'),
-              fit: BoxFit.cover,
+    String selectedMonthText = DateFormat(
+      'MMMM yyyy',
+    ).format(budgetProvider.selectedMonth);
+
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/expense_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            const Text(
+              'Monthly Budget',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-          ),
-          child: SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                const Text(
-                  'Monthly Budget',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+
+            const SizedBox(height: 6),
+
+            Text(
+              'Manage your spending limit for each month.',
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+            ),
+
+            const SizedBox(height: 16),
+
+            OutlinedButton.icon(
+              onPressed: () {
+                selectMonth(budgetProvider);
+              },
+              icon: const Icon(Icons.calendar_month),
+              label: Text(selectedMonthText),
+            ),
+
+            const SizedBox(height: 20),
+
+            if (budgetProvider.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (budgetProvider.currentBudget == null)
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.account_balance_wallet_outlined,
+                        size: 52,
+                      ),
 
-                const SizedBox(height: 6),
+                      const SizedBox(height: 12),
 
-                Text(
-                  'Manage your spending limit for each month.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                      Text(
+                        'No budget set for $selectedMonthText',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      const Text(
+                        'Set a monthly budget to track your spending.',
+                        textAlign: TextAlign.center,
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          showBudgetDialog(
+                            isEditing: false,
+                            budgetProvider: budgetProvider,
+                          );
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text('Set Budget'),
+                      ),
+                    ],
+                  ),
                 ),
-
-                const SizedBox(height: 16),
-
-                OutlinedButton.icon(
-                  onPressed: () {
-                    selectMonth(budgetProvider);
-                  },
-                  icon: const Icon(Icons.calendar_month),
-                  label: Text(selectedMonthText),
-                ),
-
-                const SizedBox(height: 20),
-
-                if (budgetProvider.isLoading)
-                  const Center(child: CircularProgressIndicator())
-                else if (budgetProvider.currentBudget == null)
+              )
+            else
+              Column(
+                children: [
                   Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
-                            Icons.account_balance_wallet_outlined,
-                            size: 52,
-                          ),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.account_balance_wallet,
+                                size: 30,
+                              ),
 
-                          const SizedBox(height: 12),
+                              const SizedBox(width: 10),
 
-                          Text(
-                            'No budget set for $selectedMonthText',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(height: 8),
-
-                          const Text(
-                            'Set a monthly budget to track your spending.',
-                            textAlign: TextAlign.center,
+                              Expanded(
+                                child: Text(
+                                  '$selectedMonthText Budget',
+                                  style: const TextStyle(
+                                    fontSize: 19,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
 
                           const SizedBox(height: 18),
 
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              showBudgetDialog(
-                                isEditing: false,
-                                budgetProvider: budgetProvider,
-                              );
-                            },
-                            icon: const Icon(Icons.add),
-                            label: const Text('Set Budget'),
+                          buildRow(
+                            'Budget',
+                            formatMoney(
+                              budgetProvider.currentBudget?.amount ?? 0.0,
+                            ),
+                          ),
+
+                          const Divider(),
+
+                          buildRow('Spent', formatMoney(spent)),
+
+                          const Divider(),
+
+                          if (overBudget)
+                            buildRow(
+                              'Over Budget',
+                              formatMoney(overBudgetAmount),
+                              valueColor: Colors.red,
+                            )
+                          else
+                            buildRow('Remaining', formatMoney(remaining)),
+
+                          const SizedBox(height: 20),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Budget Usage',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${usage.toStringAsFixed(1)}%',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: statusColor,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: LinearProgressIndicator(
+                              value: (usage / 100).clamp(0.0, 1.0),
+                              minHeight: 10,
+                              color: statusColor,
+                              backgroundColor: Colors.grey.shade200,
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          Row(
+                            children: [
+                              Icon(
+                                overBudget
+                                    ? Icons.warning_amber_rounded
+                                    : Icons.check_circle_outline,
+                                color: statusColor,
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              Expanded(
+                                child: Text(
+                                  getBudgetStatusText(usage),
+                                  style: TextStyle(
+                                    color: statusColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  )
-                else
-                  Column(
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Row(
                     children: [
-                      Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.account_balance_wallet,
-                                    size: 30,
-                                  ),
-
-                                  const SizedBox(width: 10),
-
-                                  Expanded(
-                                    child: Text(
-                                      '$selectedMonthText Budget',
-                                      style: const TextStyle(
-                                        fontSize: 19,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 18),
-
-                              buildRow(
-                                'Budget',
-                                formatMoney(
-                                  budgetProvider.currentBudget?.amount ?? 0.0,
-                                ),
-                              ),
-
-                              const Divider(),
-
-                              buildRow('Spent', formatMoney(spent)),
-
-                              const Divider(),
-
-                              if (overBudget)
-                                buildRow(
-                                  'Over Budget',
-                                  formatMoney(overBudgetAmount),
-                                  valueColor: Colors.red,
-                                )
-                              else
-                                buildRow('Remaining', formatMoney(remaining)),
-
-                              const SizedBox(height: 20),
-
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text(
-                                    'Budget Usage',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${usage.toStringAsFixed(1)}%',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: statusColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: LinearProgressIndicator(
-                                  value: (usage / 100).clamp(0.0, 1.0),
-                                  minHeight: 10,
-                                  color: statusColor,
-                                  backgroundColor: Colors.grey.shade200,
-                                ),
-                              ),
-
-                              const SizedBox(height: 16),
-
-                              Row(
-                                children: [
-                                  Icon(
-                                    overBudget
-                                        ? Icons.warning_amber_rounded
-                                        : Icons.check_circle_outline,
-                                    color: statusColor,
-                                  ),
-
-                                  const SizedBox(width: 8),
-
-                                  Expanded(
-                                    child: Text(
-                                      getBudgetStatusText(usage),
-                                      style: TextStyle(
-                                        color: statusColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            showBudgetDialog(
+                              isEditing: true,
+                              budgetProvider: budgetProvider,
+                            );
+                          },
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Edit Budget'),
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(width: 12),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                showBudgetDialog(
-                                  isEditing: true,
-                                  budgetProvider: budgetProvider,
-                                );
-                              },
-                              icon: const Icon(Icons.edit),
-                              label: const Text('Edit Budget'),
-                            ),
-                          ),
-
-                          const SizedBox(width: 12),
-
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                confirmDelete(budgetProvider);
-                              },
-                              icon: const Icon(Icons.delete_outline),
-                              label: const Text('Reset Budget'),
-                            ),
-                          ),
-                        ],
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            confirmDelete(budgetProvider);
+                          },
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text('Reset Budget'),
+                        ),
                       ),
                     ],
                   ),
-              ],
-            ),
-          ),
-        );
-      },
+                ],
+              ),
+          ],
+        ),
+      ),
     );
   }
 
